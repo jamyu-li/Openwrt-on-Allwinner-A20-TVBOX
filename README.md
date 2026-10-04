@@ -1,0 +1,3 @@
+# Openwrt-on-Allwinner-A20-TVBOX 
+## Use it to create OpenWrt for the Allwinner A20 series set-top boxes from Kaiboer
+### The common models of Kaiboer Allwinner A20 series set-top boxes include A1, Q7, K610 Gen 9th, C3 Gen 9th, and K10 Upgrade Edition, which mostly use the same motherboard. The project is based on Kaiboer K610i Gen 9th, utilizing the Allwinner A20 32-bit SoC, 1GB of memory, 4GB of NAND, 2 USB ports, 1 SD card slot, Realtek RTL8201CP Ethernet, Realtek RTL8188ETV wireless network, and running Android 4.2.2 system. The purpose of this project is to create an OpenWrt that can run on K610i Gen 9th. To this end, I have written some patch scripts and device trees, which are applied to the OpenWrt compilation of firmware belonging to K610i Gen 9th.
