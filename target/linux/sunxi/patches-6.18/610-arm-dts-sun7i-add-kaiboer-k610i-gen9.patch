@@ -1,6 +1,6 @@
 --- /dev/null	2026-09-28 19:08:19.316999027 +0800
 +++ b/arch/arm/boot/dts/allwinner/sun7i-a20-k610i-gen9.dts	2026-09-29 00:32:20.638831589 +0800
-@@ -0,0 +1,282 @@
+@@ -0,0 +1,341 @@
 +// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
 +/*
 + * Device Tree Source for the Kaiboer K610i 9th Generation TV Box
@@ -10,6 +10,8 @@
 +/dts-v1/;
 +#include "sun7i-a20.dtsi"
 +#include "sunxi-common-regulators.dtsi"
++#include <dt-bindings/gpio/gpio.h>
++#include <dt-bindings/interrupt-controller/irq.h>
 +
 +/ {
 +	model = "Kaiboer K610i 9th Gen TV Box";
@@ -18,11 +20,23 @@
 +	aliases {
 +		serial0 = &uart0;
 +		mmc0 = &mmc0;
-+		ethernet0 = &emac;
++//		ethernet0 = &gmac;
 +	};
 +
 +	chosen {
 +		stdout-path = "serial0:115200n8";
++//		bootargs = "console=ttyS0,115200 console=tty0 root=/dev/mmcblk0p2 rootwait rw";
++	};
++
++	hdmi-connector {
++		compatible = "hdmi-connector";
++		type = "a";
++
++		port {
++			hdmi_con_in: endpoint {
++				remote-endpoint = <&hdmi_out_con>;
++			};
++		};
 +	};
 +
 +	leds {
@@ -52,15 +66,17 @@
 +
 +/* ---- 覆盖 common-regulators 里的 usb0_vbus：FEX 用 PH9 而非默认 PB9 ---- */
 +&reg_usb0_vbus {
-+	gpio = <&pio 7 9 GPIO_ACTIVE_HIGH>; /* PH09 */
++	gpio = <&pio 1 9 GPIO_ACTIVE_HIGH>; /* PB09 */
 +	status = "okay";
 +};
 +
 +&reg_usb1_vbus {
++    gpio = <&pio 7 6 GPIO_ACTIVE_HIGH>; /* PH06 */
 +	status = "okay";
 +};
 +
 +&reg_usb2_vbus {
++    gpio = <&pio 7 3 GPIO_ACTIVE_HIGH>; /* PH03 */
 +	status = "okay";
 +};
 +
@@ -73,27 +89,31 @@
 +};
 +
 +/* 百兆 EMAC，引用 dtsi 里已有的 emac_pa_pins */
-+&emac {
++&gmac {
 +	pinctrl-names = "default";
-+	pinctrl-0 = <&emac_pa_pins>;
++	pinctrl-0 = <&gmac_mii_pins>;
 +	phy-handle = <&phy1>;
 +	phy-mode = "mii";
-+	allwinner,sram = <&emac_sram 1>;
++//	allwinner,sram = <&emac_sram 1>;
 +	status = "okay";
 +
-+	mdio {
-+		#address-cells = <1>;
-+		#size-cells = <0>;
++};
 +
-+		phy1: ethernet-phy@1 {
-+			reg = <1>;
-+		};
++&gmac_mdio {
++	#address-cells = <1>;
++	#size-cells = <0>;
++
++	phy1: ethernet-phy@1 {
++		reg = <1>;
++//		reset-gpios = <&pio 0 17 GPIO_ACTIVE_LOW>; /* PA17 */
++//		reset-assert-us = <10000>;
++//		reset-deassert-us = <10000>;
 +	};
 +};
 +
-+&gmac {
-+	status = "disabled";
-+};
++// &gmac {
++//	status = "disabled";
++// };
 +
 +&i2c0 {
 +	status = "okay";
@@ -101,32 +121,57 @@
 +	axp209: pmic@34 {
 +		compatible = "x-powers,axp209";
 +		reg = <0x34>;
-+		interrupts = <0>;
-+		interrupt-controller;
++		interrupt-parent = <&nmi_intc>;
++		interrupts = <0 IRQ_TYPE_LEVEL_LOW>;
++//		interrupt-controller;
 +		#interrupt-cells = <1>;
-+
-+		regulators {
-+			reg_dcdc2: dcdc2 {
-+				regulator-name = "vdd-cpu";
-+				regulator-always-on;
-+			};
-+
-+			reg_dcdc3: dcdc3 {
-+				regulator-name = "vdd-int";
-+				regulator-always-on;
-+			};
-+
-+			reg_ldo3: ldo3 {
-+				regulator-name = "vcc-3v3";
-+				regulator-always-on;
-+			};
-+
-+			reg_ldo4: ldo4 {
-+				regulator-name = "vcc-3v3-rtc";
-+				regulator-always-on;
-+			};
-+		};
 +	};
++};
++
++#include "axp209.dtsi"
++
++&ac_power_supply {
++	status = "okay";
++};
++
++&reg_dcdc2 {
++	regulator-always-on;
++	regulator-min-microvolt = <1000000>;
++	regulator-max-microvolt = <1450000>;
++	regulator-name = "vdd-cpu";
++};
++
++&reg_dcdc3 {
++	regulator-always-on;
++	regulator-min-microvolt = <1000000>;
++	regulator-max-microvolt = <1400000>;
++	regulator-name = "vdd-int-dll";
++};
++
++&reg_ldo1 {
++	regulator-always-on;
++	regulator-name = "vdd-rtc";
++};
++
++&reg_ldo2 {
++	regulator-always-on;
++	regulator-min-microvolt = <3000000>;
++	regulator-max-microvolt = <3000000>;
++	regulator-name = "avcc-pll";
++};
++
++&reg_ldo3 {
++	regulator-always-on;
++	regulator-min-microvolt = <3300000>;
++	regulator-max-microvolt = <3300000>;
++	regulator-name = "vcc-pll-3v3";
++};
++
++&reg_ldo4 {
++	regulator-always-on;
++	regulator-min-microvolt = <3300000>;
++	regulator-max-microvolt = <3300000>;
++	regulator-name = "vcc-pg";
 +};
 +
 +&i2c1 {
@@ -231,6 +276,20 @@
 +};
 +
 +&hdmi {
++	status = "okay";
++};
++
++&hdmi_out {
++	hdmi_out_con: endpoint {
++		remote-endpoint = <&hdmi_con_in>;
++	};
++};
++
++&de { 
++	status = "okay"; 
++};
++
++&tcon0 {
 +	status = "okay";
 +};
 +

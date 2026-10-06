@@ -10,7 +10,7 @@
 	sun7i-a20-cubieboard2.dtb \
 --- /dev/null
 +++ b/arch/arm/dts/sun7i-a20-kaiboer-k610i-gen9.dts
-@@ -0,0 +1,207 @@
+@@ -0,0 +1,233 @@
 +// SPDX-License-Identifier: GPL-2.0+ OR MIT
 +/*
 + * Kaiboer K610i 9th Gen TV Box (Allwinner A20/sun7i)
@@ -30,11 +30,12 @@
 +	aliases {
 +		serial0 = &uart0;
 +		mmc0 = &mmc0;
-+		ethernet0 = &emac;
++//		ethernet0 = &gmac;
 +	};
 +
 +	chosen {
 +		stdout-path = "serial0:115200n8";
++// 		bootargs = "console=ttyS0,115200 console=tty0 root=/dev/mmcblk0p2 rootwait rw";
 +	};
 +
 +	/* SD slot fixed 3.3V; FEX sdc_regulator=none */
@@ -91,8 +92,8 @@
 +};
 +
 +&i2c0 {
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&i2c0_pins>;
++//	pinctrl-names = "default";
++//	pinctrl-0 = <&i2c0_pins>;
 +	status = "okay";
 +
 +	axp209: pmic@34 {
@@ -100,7 +101,7 @@
 +		reg = <0x34>;
 +		interrupt-parent = <&nmi_intc>;
 +		interrupts = <0 IRQ_TYPE_LEVEL_LOW>;
-+		interrupt-controller;
++//		interrupt-controller;
 +		#interrupt-cells = <1>;
 +	};
 +};
@@ -123,37 +124,53 @@
 +};
 +
 +/* 百兆 EMAC，引用 dtsi 里已有的 emac_pa_pins */
-+&emac {
++&gmac {
 +	pinctrl-names = "default";
-+	pinctrl-0 = <&emac_pa_pins>;
++	pinctrl-0 = <&gmac_mii_pins>;
 +	phy-handle = <&phy1>;
 +	phy-mode = "mii";
-+	allwinner,sram = <&emac_sram 1>;
++//	allwinner,sram = <&emac_sram 1>;
++//	reset-gpios = <&pio 0 17 GPIO_ACTIVE_LOW>; /* PA17 复位，低电平有效 */
 +	status = "okay";
++};
 +
-+	mdio {
-+		#address-cells = <1>;
-+		#size-cells = <0>;
++&gmac_mdio {
++	#address-cells = <1>;
++	#size-cells = <0>;
 +
-+		phy1: ethernet-phy@1 {
-+			reg = <1>;
-+		};
++	phy1: ethernet-phy@1 {
++		reg = <1>;
 +	};
 +};
 +
-+&gmac {
-+	status = "disabled";
++// &gmac {
++//	status = "disabled";
++// };
++
++&ehci0 { 
++	status = "okay"; 
 +};
 +
-+&ehci0 { status = "okay"; };
-+&ehci1 { status = "okay"; };
-+&ohci0 { status = "okay"; };
-+&ohci1 { status = "okay"; };
-+&otg_sram { status = "okay"; };
++&ehci1 { 
++	status = "okay"; 
++};
++
++&ohci0 { 
++	status = "okay"; 
++};
++
++&ohci1 { 
++	status = "okay"; 
++};
++
++&otg_sram { 
++	status = "okay"; 
++};
 +
 +&usb_otg {
-+	dr_mode = "otg";
++	dr_mode = "host";
 +	status = "okay";
++	vbus-supply = <&reg_usb0_vbus>;
 +};
 +
 +&usbphy {
@@ -174,23 +191,32 @@
 +	};
 +};
 +
-+&de { status = "okay"; };
-+&tcon0 { status = "okay"; };
++&de { 
++	status = "okay"; 
++};
++
++&tcon0 { 
++	status = "okay"; 
++};
 +
 +#include "axp209.dtsi"
 +
++&ac_power_supply {
++	status = "okay";
++};
++
 +&reg_dcdc2 {
 +	regulator-always-on;
-+	regulator-min-microvolt = <1400000>;
-+	regulator-max-microvolt = <1400000>;
++	regulator-min-microvolt = <1000000>;
++	regulator-max-microvolt = <1450000>;
 +	regulator-name = "vdd-cpu";
 +};
 +
 +&reg_dcdc3 {
 +	regulator-always-on;
-+	regulator-min-microvolt = <1250000>;
-+	regulator-max-microvolt = <1250000>;
-+	regulator-name = "vdd-sys";
++	regulator-min-microvolt = <1000000>;
++	regulator-max-microvolt = <1400000>;
++	regulator-name = "vdd-int-dll";
 +};
 +
 +&reg_ldo1 {
@@ -220,7 +246,7 @@
 +};
 --- /dev/null
 +++ b/configs/kaiboer_k610i_gen9_defconfig
-@@ -0,0 +1,54 @@
+@@ -0,0 +1,60 @@
 +CONFIG_ARM=y
 +CONFIG_ARCH_SUNXI=y
 +CONFIG_MACH_SUN7I=y
@@ -238,7 +264,6 @@
 +CONFIG_NR_DRAM_BANKS=1
 +CONFIG_SPL_MMC_SUPPORT=y
 +CONFIG_SYS_CLK_FREQ=912000000
-+CONFIG_SUNXI_EMAC=y
 +CONFIG_MMC_SUNXI=y
 +CONFIG_MMC_SUNXI_SLOT_EXTRA=3
 +CONFIG_MMC0_CD_PIN="PD4"
@@ -275,3 +300,10 @@
 +CONFIG_DM_I2C=y
 +CONFIG_OF_LIBFDT=y
 +CONFIG_SUPPORT_PASSING_ATAGS=y
++CONFIG_PHYLIB=y
++CONFIG_MII=y
++CONFIG_DM_ETH=y
++CONFIG_PHY=y
++CONFIG_SUN7I_GMAC=y
++CONFIG_ETH_DESIGNWARE=y
++CONFIG_PHY_REALTEK=y
