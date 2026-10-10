@@ -232,7 +232,7 @@
 +};
 +
 +&reg_ldo3 {
-+	regulator-always-on;
++//	regulator-always-on;
 +	regulator-min-microvolt = <3300000>;
 +	regulator-max-microvolt = <3300000>;
 +	regulator-name = "vcc-pll-3v3";
