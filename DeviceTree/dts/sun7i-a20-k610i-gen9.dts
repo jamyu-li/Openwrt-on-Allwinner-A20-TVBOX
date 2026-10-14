@@ -213,11 +213,31 @@
 	status = "okay";
 
 	nand@0 {
-		#address-cells = <0>;
-		#size-cells = <0>;
+//		#address-cells = <0>;
+//		#size-cells = <0>;
 		reg = <0>;
 		allwinner,rb = <0>;
 		nand-on-flash-bbt;
+		nand-ecc-mode = "hw";
+		nand-ecc-strength = <24>;
+		nand-ecc-step-size = <1024>;
+
+		partitions {
+			compatible = "fixed-partitions";
+			#address-cells = <1>;
+			#size-cells = <1>;
+
+			partition@0 {
+				label = "u-boot";
+				reg = <0x0 0x100000>;   /* 1 MiB */
+				read-only;
+			};
+
+			partition@100000 {
+				label = "ubi";
+				reg = <0x100000 0x0>;   /* 剩余全部，0 表示到末尾 */
+			};
+		};
 	};
 };
 
