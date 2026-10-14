@@ -1,0 +1,23 @@
+#!/bin/sh /etc/rc.common
+#
+# rtl8188eus 开机自纠：确保厂商驱动 8188eu 独占 RTL8188EU/EUS/ETV 设备。
+# 正常情况下（未编译 kmod-rtl8xxxu）本脚本什么都不做，只是保险。
+#
+
+START=19
+STOP=90
+
+start() {
+	# 若主线 rtl8xxxu 抢先加载并占用了设备，先卸载它
+	if lsmod | grep -q '^rtl8xxxu'; then
+		rmmod rtl8xxxu 2>/dev/null
+		logger -t rtl8188eus "rtl8xxxu detected, removed to free the device"
+	fi
+
+	# 确保厂商驱动已加载（AUTOLOAD 一般已处理，这里兜底）
+	lsmod | grep -q '^8188eu' || modprobe 8188eu 2>/dev/null
+}
+
+stop() {
+	rmmod 8188eu 2>/dev/null
+}

@@ -1,6 +1,6 @@
 --- /dev/null	2026-09-28 19:08:19.316999027 +0800
 +++ b/arch/arm/boot/dts/allwinner/sun7i-a20-k610i-gen9.dts	2026-09-29 00:32:20.638831589 +0800
-@@ -0,0 +1,341 @@
+@@ -0,0 +1,361 @@
 +// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
 +/*
 + * Device Tree Source for the Kaiboer K610i 9th Generation TV Box
@@ -216,11 +216,31 @@
 +	status = "okay";
 +
 +	nand@0 {
-+		#address-cells = <0>;
-+		#size-cells = <0>;
++//		#address-cells = <0>;
++//		#size-cells = <0>;
 +		reg = <0>;
 +		allwinner,rb = <0>;
 +		nand-on-flash-bbt;
++		nand-ecc-mode = "hw";
++		nand-ecc-strength = <24>;
++		nand-ecc-step-size = <1024>;
++
++		partitions {
++			compatible = "fixed-partitions";
++			#address-cells = <1>;
++			#size-cells = <1>;
++
++			partition@0 {
++				label = "u-boot";
++				reg = <0x0 0x100000>;   /* 1 MiB */
++				read-only;
++			};
++
++			partition@100000 {
++				label = "ubi";
++				reg = <0x100000 0x0>;   /* 剩余全部，0 表示到末尾 */
++			};
++		};
 +	};
 +};
 +
