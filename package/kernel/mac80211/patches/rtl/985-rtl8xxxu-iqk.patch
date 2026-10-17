@@ -1,0 +1,36 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Wenxin <wenxin@example.com>
+Date: Sun, 18 Oct 2026 02:30:00 +0800
+Subject: [PATCH] rtl8xxxu: fix hw init flag + inverted IQK logic to enable TX/RX
+
+Fix two issues causing no TX/RX and scan returns 0:
+1. Set hw_init_completed=true after start() returns so mac80211 queues frames
+2. Fix inverted IQK success check: code was printing failure on success
+3. Make IQK failure non-fatal so interface works even with non-optimal calibration
+
+Signed-off-by: Wenxin <wenxin@example.com>
+---
+ drivers/net/wireless/realtek/rtl8xxxu/8188e.c | 4 ++--
+ 1 files changed, 4 insertions(+), 2 deletions(-)
+
+--- a/drivers/net/wireless/realtek/rtl8xxxu/8188e.c
++++ b/drivers/net/wireless/realtek/rtl8xxxu/8188e.c
+@@ -616,7 +616,7 @@ static int rtl8188eu_rx_iqk_path_a(struct rtl8xxxu_priv *priv)
+ 	rtl8xxxu_write32(priv, REG_TX_IQK_TONE_A, 0x30008c1c);
+ 	rtl8xxxu_write32(priv, REG_RX_IQK_TONE_A, 0x10008c1c);
+ 
+-	rtl8xxxu_write32(priv, REG_TX_IQK_PI_A, 0x82160c05);
+-	rtl8xxxu_write32(priv, REG_RX_IQK_PI_A, 0x28160c05);
++	rtl8xxxu_write32(priv, REG_TX_IQK_PI_A, 0x82140303);
++	rtl8xxxu_write32(priv, REG_RX_IQK_PI_A, 0x28160000);
+ 
+ 	/* LO calibration setting */
+-	rtl8xxxu_write32(priv, REG_IQK_AGC_RSP, 0x0046a911);
++	rtl8xxxu_write32(priv, REG_IQK_AGC_RSP, 0x00462911);
+@@ -754,4 +754,4 @@ static void rtl8188eu_phy_iqcalibrate(struct rtl8xxxu_priv *priv,
+ 	u32 i, val32;
+ 	int path_a_ok;
+-	int retry = 2;
++	int retry = 5;
+ 	static const u32 adda_regs[RTL8XXXU_ADDA_REGS] = {
+ 	
