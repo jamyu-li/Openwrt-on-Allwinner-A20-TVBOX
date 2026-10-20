@@ -25,15 +25,15 @@
 // 		bootargs = "console=ttyS0,115200 console=tty0 root=/dev/mmcblk0p2 rootwait rw";
 	};
 
-	/* SD slot fixed 3.3V; FEX sdc_regulator=none */
-	reg_vcc3v3_mmc0: vcc3v3-mmc0 {
-		compatible = "regulator-fixed";
-		regulator-name = "vcc3v3-mmc0";
-		regulator-min-microvolt = <3300000>;
-		regulator-max-microvolt = <3300000>;
-		regulator-always-on;
-	};
-
+//	/* SD slot fixed 3.3V; FEX sdc_regulator=none */
+//	reg_vcc3v3_mmc0: vcc3v3-mmc0 {
+//		compatible = "regulator-fixed";
+//		regulator-name = "vcc3v3-mmc0";
+//		regulator-min-microvolt = <3300000>;
+//		regulator-max-microvolt = <3300000>;
+//		regulator-always-on;
+//	};
+//
 
 	hdmi-out {
 		compatible = "hdmi-connector";
@@ -43,6 +43,15 @@
 				remote-endpoint = <&hdmi_out_con>;
 			};
 		};
+	};
+};
+
+&pio {
+	usb_5v_en: usb-5v-en {
+		gpio-hog;
+		gpios = <3 2 GPIO_ACTIVE_HIGH>;	/* PD2 */
+		output-high;
+		line-name = "usb-5v-en";
 	};
 };
 
@@ -136,18 +145,22 @@
 
 &ehci0 { 
 	status = "okay"; 
+	vbus-supply = <&reg_usb1_vbus>;
 };
 
 &ehci1 { 
 	status = "okay"; 
+	vbus-supply = <&reg_usb2_vbus>;
 };
 
 &ohci0 { 
-	status = "okay"; 
+	status = "okay";
+	vbus-supply = <&reg_usb1_vbus>;
 };
 
 &ohci1 { 
 	status = "okay"; 
+	vbus-supply = <&reg_usb2_vbus>;
 };
 
 &otg_sram { 
@@ -165,7 +178,6 @@
 	usb0_vbus-supply = <&reg_usb0_vbus>;
 	usb1_vbus-supply = <&reg_usb1_vbus>;
 	usb2_vbus-supply = <&reg_usb2_vbus>;
-	usb0_id_det-gpios = <&pio 7 4 GPIO_ACTIVE_HIGH>; /* PH04 */
 };
 
 &hdmi {

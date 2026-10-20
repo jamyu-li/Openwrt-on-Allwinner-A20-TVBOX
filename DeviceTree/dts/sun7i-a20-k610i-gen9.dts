@@ -38,12 +38,12 @@
 
 	leds {
 		compatible = "gpio-leds";
-		pinctrl-names = "default";
-		pinctrl-0 = <&led_pins_k610i>;
+//		pinctrl-names = "default";
+//		pinctrl-0 = <&led_pins_k610i>;
 
 		led-0 {
 			label = "k610i:blue:power";
-			gpios = <&pio 7 20 GPIO_ACTIVE_HIGH>; /* PH20 */
+			gpios = <&pio 3 17 GPIO_ACTIVE_HIGH>; /* PD17 */
 			default-state = "on";
 		};
 	};
@@ -319,12 +319,18 @@
 
 /* 板级 pin group：只补 dtsi 里没有的 */
 &pio {
-	led_pins_k610i: led-pins-k610i {
-		pins = "PH20";
-		function = "gpio_out";
-		drive-strength = <20>;
+	usb_5v_en: usb-5v-en {
+		gpio-hog;
+		gpios = <3 2 GPIO_ACTIVE_HIGH>;	/* PD2 */
+		output-high;
+		line-name = "usb-5v-en";
 	};
-
+//	led_pins_k610i: led-pins-k610i {
+//		pins = "PH20";
+//		function = "gpio_out";
+//		drive-strength = <20>;
+//	};
+//
 	key_pins_k610i: key-pins-k610i {
 		pins = "PH16";
 		function = "gpio_in";
